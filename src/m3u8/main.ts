@@ -140,7 +140,10 @@ for (const track of tracks) {
     );
     cloudM3U8Lines.push(metadataLine);
     cloudM3U8Lines.push(
-      appendComponentToURLPath(songFolderCloudM3U8Path, fileName),
+      appendComponentToURLPath(
+        songFolderCloudM3U8Path,
+        encodeURIComponent(fileName),
+      ),
     );
   }
 }
