@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun run --
 
 import { existsSync } from "node:fs";
 import { cp, mkdir } from "node:fs/promises";
@@ -6,6 +6,7 @@ import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import { exit } from "node:process";
 import { $, file, fileURLToPath } from "bun";
+import { appendRow, serialize } from "./dom";
 import { stringToSHA256Hex } from "./sha256";
 
 const AUTHOR = "Lucas Garron";
@@ -110,6 +111,11 @@ const cloudM3U8Lines = structuredClone(relativeM3U8Lines);
 
 let trackNumber = 0;
 for (const track of tracks) {
+  // if (track.grouping.includes("set-list:skip")) {
+  //   console.log("Skipping: ");
+  //   continue;
+  // }
+
   trackNumber++;
   if (!goodCloudStatuses.has(track.cloudStatus)) {
     throw new Error(
@@ -146,6 +152,8 @@ for (const track of tracks) {
       ),
     );
   }
+
+  appendRow(track, fileName);
 }
 
 await mkdir(outputFolder, { recursive: true });
@@ -162,6 +170,8 @@ if (cloudPathRoot) {
     .writer()
     .write(cloudM3U8Lines.join("\n"));
 }
+
+await file(join(outputFolder, "songs.html")).write(serialize());
 
 await $`open ${outputFolder}`;
 await $`cd ${outputFolder} && zip -r ${coreFileName} ${relativeM3U8FileName} ${SONGS_FOLDER_NAME}`;
